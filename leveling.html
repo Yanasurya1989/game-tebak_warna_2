@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Game Tebak Warna - Stroop Challenge</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      body {
+        transition: background 0.35s;
+      }
+
+      #game {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        position: relative;
+      }
+
+      #title {
+        position: absolute;
+        top: 25px;
+        left: 50%;
+        transform: translateX(-50%);
+
+        color: white;
+
+        font-size: 24px;
+
+        font-weight: bold;
+
+        text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.4);
+      }
+
+      #level {
+        position: absolute;
+
+        left: 25px;
+
+        top: 25px;
+
+        color: white;
+
+        font-size: 30px;
+
+        font-weight: bold;
+
+        text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.4);
+      }
+
+      #question {
+        position: absolute;
+
+        right: 25px;
+
+        top: 25px;
+
+        color: white;
+
+        font-size: 30px;
+
+        font-weight: bold;
+
+        text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.4);
+      }
+
+      #instruction {
+        position: absolute;
+
+        bottom: 30px;
+
+        left: 50%;
+
+        transform: translateX(-50%);
+
+        padding: 16px 34px;
+
+        border-radius: 50px;
+
+        background: rgba(0, 0, 0, 0.35);
+
+        color: white;
+
+        font-size: 26px;
+
+        font-weight: bold;
+
+        backdrop-filter: blur(8px);
+      }
+
+      #word {
+        font-size: 220px;
+
+        font-weight: 900;
+
+        letter-spacing: 8px;
+
+        text-transform: uppercase;
+
+        user-select: none;
+
+        text-align: center;
+
+        line-height: 1;
+
+        text-shadow:
+          0 8px 25px rgba(0, 0, 0, 0.3),
+          0 15px 40px rgba(0, 0, 0, 0.25);
+      }
+
+      .pop {
+        animation: pop 0.25s;
+      }
+
+      @keyframes pop {
+        from {
+          opacity: 0;
+
+          transform: scale(0.55);
+        }
+
+        to {
+          opacity: 1;
+
+          transform: scale(1);
+        }
+      }
+
+      #overlay {
+        position: fixed;
+
+        left: 0;
+
+        top: 0;
+
+        width: 100%;
+
+        height: 100%;
+
+        display: none;
+
+        justify-content: center;
+
+        align-items: center;
+
+        background: rgba(0, 0, 0, 0.82);
+
+        color: white;
+
+        flex-direction: column;
+
+        text-align: center;
+
+        z-index: 100;
+      }
+
+      #overlay h1 {
+        font-size: 90px;
+
+        margin-bottom: 30px;
+      }
+
+      #overlay p {
+        font-size: 38px;
+
+        margin: 12px;
+      }
+
+      #overlay small {
+        margin-top: 40px;
+
+        font-size: 28px;
+
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="game">
+      <div id="title">GAME TEBAK WARNA</div>
+
+      <div id="level">LEVEL 1</div>
+
+      <div id="question">SOAL 1</div>
+
+      <div id="word"></div>
+
+      <div id="instruction">Sebutkan WARNA BACKGROUND</div>
+    </div>
+
+    <div id="overlay">
+      <h1 id="overlayTitle"></h1>
+
+      <p id="overlayText1"></p>
+
+      <p id="overlayText2"></p>
+
+      <small> Tekan ← atau → untuk melanjutkan </small>
+    </div>
+
+    <script>
+      const colors = [
+        { name: "MERAH", color: "#e53935" },
+        { name: "BIRU", color: "#1e88e5" },
+        { name: "HIJAU", color: "#43a047" },
+        { name: "KUNING", color: "#fdd835" },
+        { name: "PUTIH", color: "#ffffff" },
+        { name: "HITAM", color: "#222222" },
+        { name: "UNGU", color: "#8e24aa" },
+        { name: "ORANYE", color: "#fb8c00" },
+        { name: "PINK", color: "#ec407a" },
+        { name: "COKLAT", color: "#795548" },
+        { name: "ABU-ABU", color: "#757575" },
+        { name: "TOSKA", color: "#26a69a" },
+      ];
+
+      let level = 1;
+
+      let soal = 1;
+
+      let overlay = true;
+
+      const word = document.getElementById("word");
+      const levelText = document.getElementById("level");
+      const soalText = document.getElementById("question");
+      const instruction = document.getElementById("instruction");
+
+      const overlayBox = document.getElementById("overlay");
+      const overlayTitle = document.getElementById("overlayTitle");
+      const overlayText1 = document.getElementById("overlayText1");
+      const overlayText2 = document.getElementById("overlayText2");
+
+      function randomColor() {
+        return colors[Math.floor(Math.random() * colors.length)];
+      }
+
+      function showOverlay() {
+        overlayBox.style.display = "flex";
+
+        document.body.style.background = "#111";
+
+        if (level == 1) {
+          overlayTitle.innerHTML = "LEVEL 1";
+
+          overlayText1.innerHTML = "Sebutkan WARNA BACKGROUND";
+
+          overlayText2.innerHTML = "Jangan membaca tulisannya";
+        } else {
+          overlayTitle.innerHTML = "LEVEL 2";
+
+          overlayText1.innerHTML = "Sekarang sebutkan WARNA TULISAN";
+
+          overlayText2.innerHTML = "Jangan membaca isi tulisannya";
+        }
+      }
+
+      showOverlay();
+
+      function nextQuestion() {
+        overlayBox.style.display = "none";
+
+        levelText.innerHTML = "LEVEL " + level;
+        soalText.innerHTML = "SOAL " + soal;
+
+        if (level == 1) {
+          instruction.innerHTML = "Sebutkan WARNA BACKGROUND";
+        } else {
+          instruction.innerHTML = "Sebutkan WARNA TULISAN";
+        }
+
+        // pilih background
+        let bg = randomColor();
+
+        document.body.style.background = bg.color;
+
+        // mode:
+        // 0,1,2 = polos
+        // 3,4,5 = ada tulisan
+        let mode = (soal - 1) % 6;
+
+        if (mode < 3) {
+          word.innerHTML = "";
+        } else {
+          let tulisan;
+
+          do {
+            tulisan = randomColor();
+          } while (tulisan.name == bg.name);
+
+          word.innerHTML = tulisan.name;
+
+          // ===========================
+          // LEVEL 1
+          // warna tulisan dibuat kontras
+          // ===========================
+
+          if (level == 1) {
+            if (bg.name == "PUTIH" || bg.name == "KUNING") {
+              word.style.color = "#111";
+            } else {
+              word.style.color = "#ffffff";
+            }
+          }
+
+          // ===========================
+          // LEVEL 2 (STROOP)
+          // warna tulisan acak
+          // ===========================
+          else {
+            let warnaTulisan;
+
+            do {
+              warnaTulisan = randomColor();
+            } while (
+              warnaTulisan.name == bg.name ||
+              warnaTulisan.name == tulisan.name
+            );
+
+            word.style.color = warnaTulisan.color;
+          }
+
+          // animasi
+          word.classList.remove("pop");
+          void word.offsetWidth;
+          word.classList.add("pop");
+        }
+
+        soal++;
+
+        // naik level setelah 12 soal
+        if (soal == 13 && level == 1) {
+          level = 2;
+          soal = 1;
+          overlay = true;
+        }
+
+        // selesai permainan setelah level 2
+        if (soal == 13 && level == 2) {
+          overlayBox.style.display = "flex";
+
+          overlayTitle.innerHTML = "SELESAI";
+
+          overlayText1.innerHTML = "🎉 Selamat!";
+
+          overlayText2.innerHTML = "Tekan R untuk mengulang permainan.";
+
+          instruction.style.display = "none";
+        }
+      }
+
+      document.addEventListener("keydown", function (e) {
+        // Mulai / lanjut dari overlay
+        if ((e.key === "ArrowRight" || e.key === "ArrowLeft") && overlay) {
+          overlay = false;
+          nextQuestion();
+          return;
+        }
+
+        // Soal berikutnya
+        if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+          nextQuestion();
+
+          // Jika habis Level 1, tampilkan overlay Level 2
+          if (level == 2 && soal == 1) {
+            overlay = true;
+            showOverlay();
+          }
+
+          return;
+        }
+
+        // Restart permainan
+        if (e.key === "r" || e.key === "R") {
+          level = 1;
+          soal = 1;
+          overlay = true;
+
+          instruction.style.display = "block";
+
+          showOverlay();
+        }
+      });
+
+      // Fokus keyboard
+      window.focus();
+    </script>
+  </body>
+</html>
