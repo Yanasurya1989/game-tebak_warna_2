@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game Tebak Warna</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      body {
+        background: linear-gradient(135deg, #4facfe, #00f2fe);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      .container {
+        width: 95%;
+        max-width: 650px;
+        background: #fff;
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+      }
+
+      h1 {
+        margin-bottom: 15px;
+      }
+
+      .info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        font-weight: bold;
+        font-size: 18px;
+      }
+
+      .color-box {
+        width: 230px;
+        height: 230px;
+        margin: 25px auto;
+        border-radius: 20px;
+        border: 6px solid #eee;
+        transition: 0.3s;
+      }
+
+      .question {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+
+      .buttons {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      button {
+        padding: 15px;
+        border: none;
+        border-radius: 12px;
+        font-size: 18px;
+        cursor: pointer;
+        background: #3498db;
+        color: white;
+        transition: 0.2s;
+      }
+
+      button:hover {
+        transform: scale(1.05);
+      }
+
+      button:active {
+        transform: scale(0.95);
+      }
+
+      #message {
+        margin-top: 20px;
+        font-size: 24px;
+        font-weight: bold;
+        min-height: 35px;
+      }
+
+      .correct {
+        color: green;
+      }
+
+      .wrong {
+        color: red;
+      }
+
+      #restart {
+        margin-top: 20px;
+        display: none;
+        background: #2ecc71;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎨 Tebak Warna</h1>
+
+      <div class="info">
+        <div>Soal : <span id="number">1</span>/20</div>
+        <div>Benar : <span id="score">0</span></div>
+      </div>
+
+      <div class="color-box" id="colorBox"></div>
+
+      <div class="question">Apa nama warna di atas?</div>
+
+      <div class="buttons" id="buttons"></div>
+
+      <div id="message"></div>
+
+      <button id="restart">Main Lagi</button>
+    </div>
+
+    <script>
+      const colors = [
+        { name: "Merah", code: "#e74c3c" },
+        { name: "Biru", code: "#3498db" },
+        { name: "Hijau", code: "#2ecc71" },
+        { name: "Kuning", code: "#f1c40f" },
+        { name: "Hitam", code: "#2d3436" },
+        { name: "Putih", code: "#ffffff" },
+        { name: "Ungu", code: "#9b59b6" },
+        { name: "Oranye", code: "#e67e22" },
+        { name: "Pink", code: "#ff69b4" },
+        { name: "Coklat", code: "#8b4513" },
+      ];
+
+      let score = 0;
+      let number = 1;
+      let answer = "";
+
+      const totalQuestion = 20;
+
+      const colorBox = document.getElementById("colorBox");
+      const buttons = document.getElementById("buttons");
+      const message = document.getElementById("message");
+      const scoreText = document.getElementById("score");
+      const numberText = document.getElementById("number");
+      const restart = document.getElementById("restart");
+
+      function shuffle(arr) {
+        return [...arr].sort(() => Math.random() - 0.5);
+      }
+
+      function nextQuestion() {
+        message.innerHTML = "";
+
+        if (number > totalQuestion) {
+          finishGame();
+          return;
+        }
+
+        numberText.innerHTML = number;
+
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+        answer = randomColor.name;
+
+        colorBox.style.background = randomColor.code;
+
+        let options = shuffle(colors)
+          .slice(0, 4)
+          .map((x) => x.name);
+
+        if (!options.includes(answer)) {
+          options[Math.floor(Math.random() * 4)] = answer;
+        }
+
+        options = shuffle(options);
+
+        buttons.innerHTML = "";
+
+        options.forEach((opt) => {
+          const btn = document.createElement("button");
+
+          btn.innerHTML = opt;
+
+          btn.onclick = () => checkAnswer(opt);
+
+          buttons.appendChild(btn);
+        });
+      }
+
+      function checkAnswer(choice) {
+        if (choice === answer) {
+          playCorrectSound();
+
+          score++;
+
+          scoreText.innerHTML = score;
+
+          message.className = "correct";
+          message.innerHTML = "✅ Benar!";
+        } else {
+          playWrongSound();
+
+          message.className = "wrong";
+          message.innerHTML = "❌ Salah! Jawaban: " + answer;
+        }
+
+        buttons.querySelectorAll("button").forEach((b) => {
+          b.disabled = true;
+        });
+
+        setTimeout(() => {
+          number++;
+          nextQuestion();
+        }, 1200);
+      }
+
+      function finishGame() {
+        buttons.innerHTML = "";
+
+        colorBox.style.background = "#ddd";
+
+        message.className = "";
+
+        let text = "";
+
+        if (score == 20) {
+          text = "🏆 Luar Biasa! Nilai Sempurna!";
+        } else if (score >= 16) {
+          text = "🥳 Hebat!";
+        } else if (score >= 11) {
+          text = "😊 Bagus!";
+        } else {
+          text = "💪 Ayo Coba Lagi!";
+        }
+
+        message.innerHTML = `
+    <h2>${text}</h2>
+    <br>
+    Skor Akhir
+    <br><br>
+    <span style="font-size:40px">${score} / ${totalQuestion}</span>
+    `;
+
+        restart.style.display = "inline-block";
+      }
+
+      restart.onclick = () => {
+        score = 0;
+        number = 1;
+
+        scoreText.innerHTML = 0;
+
+        restart.style.display = "none";
+
+        nextQuestion();
+      };
+
+      // =======================
+      // Efek Suara
+      // =======================
+
+      const audioContext = new (
+        window.AudioContext || window.webkitAudioContext
+      )();
+
+      function playCorrectSound() {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(700, audioContext.currentTime);
+        osc.frequency.linearRampToValueAtTime(
+          1000,
+          audioContext.currentTime + 0.15,
+        );
+
+        gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(
+          0.001,
+          audioContext.currentTime + 0.2,
+        );
+
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.2);
+      }
+
+      function playWrongSound() {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(300, audioContext.currentTime);
+        osc.frequency.linearRampToValueAtTime(
+          120,
+          audioContext.currentTime + 0.35,
+        );
+
+        gain.gain.setValueAtTime(0.18, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(
+          0.001,
+          audioContext.currentTime + 0.35,
+        );
+
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.35);
+      }
+
+      nextQuestion();
+    </script>
+  </body>
+</html>
