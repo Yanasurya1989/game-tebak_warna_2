@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game Tebak Warna - Stroop Test</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        overflow: hidden;
+        transition: background 0.25s ease;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      #screen {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+
+      #text {
+        font-size: 220px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 10px;
+        text-align: center;
+        user-select: none;
+        line-height: 1;
+        text-shadow:
+          0 5px 15px rgba(0, 0, 0, 0.25),
+          0 12px 30px rgba(0, 0, 0, 0.25);
+      }
+
+      @keyframes pop {
+        from {
+          transform: scale(0.6);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      #guide {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.45);
+        color: #fff;
+        padding: 12px 28px;
+        border-radius: 50px;
+        font-size: 20px;
+        font-weight: bold;
+        backdrop-filter: blur(5px);
+      }
+
+      #counter {
+        position: fixed;
+        top: 20px;
+        right: 25px;
+        background: rgba(255, 255, 255, 0.25);
+        color: #fff;
+        padding: 10px 18px;
+        border-radius: 15px;
+        font-weight: bold;
+        font-size: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="counter"></div>
+
+    <div id="screen">
+      <div id="text"></div>
+    </div>
+
+    <div id="guide">👉 Sebutkan WARNA BACKGROUND, bukan baca tulisannya!</div>
+
+    <script>
+      const colors = [
+        { name: "MERAH", color: "#e53935" },
+        { name: "BIRU", color: "#1e88e5" },
+        { name: "HIJAU", color: "#43a047" },
+        { name: "KUNING", color: "#fdd835" },
+        { name: "PUTIH", color: "#ffffff" },
+        { name: "HITAM", color: "#212121" },
+        { name: "UNGU", color: "#8e24aa" },
+        { name: "ORANYE", color: "#fb8c00" },
+        { name: "PINK", color: "#ec407a" },
+        { name: "COKLAT", color: "#795548" },
+        { name: "ABU-ABU", color: "#757575" },
+        { name: "TOSKA", color: "#26a69a" },
+      ];
+
+      let nomor = 1;
+
+      function randomColor() {
+        return colors[Math.floor(Math.random() * colors.length)];
+      }
+
+      function tampilkan() {
+        let bg = randomColor();
+
+        document.body.style.background = bg.color;
+
+        const text = document.getElementById("text");
+        const counter = document.getElementById("counter");
+
+        counter.innerHTML = "Soal : " + nomor;
+
+        // tulisan hitam jika background terang
+        if (bg.name == "PUTIH" || bg.name == "KUNING") {
+          text.style.color = "black";
+        } else {
+          text.style.color = "white";
+        }
+
+        // reset animasi
+        text.style.animation = "none";
+        void text.offsetWidth;
+        text.style.animation = "pop .22s";
+
+        // 3 kosong, 3 tulisan
+        let mode = (nomor - 1) % 6;
+
+        if (mode < 3) {
+          text.innerHTML = "";
+        } else {
+          let tulisan;
+
+          do {
+            tulisan = randomColor();
+          } while (tulisan.name == bg.name);
+
+          text.innerHTML = tulisan.name;
+        }
+
+        nomor++;
+      }
+
+      tampilkan();
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key == "ArrowRight" || e.key == "ArrowLeft") {
+          tampilkan();
+        }
+      });
+    </script>
+  </body>
+</html>
